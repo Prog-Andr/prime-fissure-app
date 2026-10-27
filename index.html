@@ -1,1 +1,238 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime Fissure — Створення події</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --border-color: #334155;
+            --accent-color: #10b981;
+            --accent-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        h2 {
+            margin-top: 0;
+            color: var(--accent-color);
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background-color: #0b0f19;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-main);
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        textarea { resize: vertical; height: 80px; }
+        .row { display: flex; gap: 15px; }
+        .col { flex: 1; }
+        button {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        button:hover { background-color: var(--accent-hover); color: #fff; }
+        #statusMessage {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+        .success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+        .error { background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    </style>
+</head>
+<body>
 
+    <div class="container">
+        <h2>⚡️ Prime Fissure — GitHub App</h2>
+        
+        <form id="eventForm">
+            <div class="form-group">
+                <label for="creator_chat_id">Telegram Chat ID творця *</label>
+                <input type="number" id="creator_chat_id" required placeholder="123456789">
+            </div>
+
+            <div class="form-group">
+                <label for="title">Назва події *</label>
+                <input type="text" id="title" required placeholder="Стратегічна нарада">
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="class_id">Тип події *</label>
+                        <select id="class_id" required>
+                            <option value="1">1 — Мітинг / Зустріч</option>
+                            <option value="2">2 — Дедлайн / Задача</option>
+                            <option value="3">3 — Важливе сповіщення</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="location">Локація / Посилання</label>
+                        <input type="text" id="location" placeholder="Office / Zoom link">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="start_time">Час початку *</label>
+                        <input type="datetime-local" id="start_time" required>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="end_time">Час кінця</label>
+                        <input type="datetime-local" id="end_time">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="recurrence_rule">Повторювання</label>
+                        <select id="recurrence_rule">
+                            <option value="none">Без повторювання</option>
+                            <option value="daily">Щодня</option>
+                            <option value="weekly">Щотижня</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <label for="participant_chat_ids">Учасники (через кому)</label>
+                        <input type="text" id="participant_chat_ids" placeholder="111222, 333444">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Опис події</label>
+                <textarea id="description" placeholder="Додаткові деталі..."></textarea>
+            </div>
+
+            <button type="submit" id="submitBtn">Створити подію через GitHub App</button>
+        </form>
+
+        <div id="statusMessage"></div>
+    </div>
+
+    <script>
+        document.getElementById('eventForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const statusDiv = document.getElementById('statusMessage');
+            
+            btn.disabled = true;
+            btn.textContent = 'Відправка на сервер...';
+            statusDiv.style.display = 'none';
+
+            // Публічне посилання тунелю Pinggy для порту 8402
+            const BACKEND_URL = "https://oingn-95-158-53-65.free.pinggy.net/webhook/events";
+            const WEBHOOK_TOKEN = "prime_fissure_gas_secure_token_2026";
+
+            const payload = {
+                creator_chat_id: Number(document.getElementById('creator_chat_id').value),
+                title: document.getElementById('title').value,
+                class_id: Number(document.getElementById('class_id').value),
+                location: document.getElementById('location').value,
+                start_time: document.getElementById('start_time').value,
+                end_time: document.getElementById('end_time').value || null,
+                recurrence_rule: document.getElementById('recurrence_rule').value,
+                participant_chat_ids: document.getElementById('participant_chat_ids').value
+                    ? document.getElementById('participant_chat_ids').value.split(',').map(id => Number(id.trim())).filter(Boolean)
+                    : [],
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-webhook-token': WEBHOOK_TOKEN
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    statusDiv.className = 'statusMessage success';
+                    statusDiv.textContent = '✅ Подію успішно створено та додано до черги сповіщень!';
+                    document.getElementById('eventForm').reset();
+                } else {
+                    statusDiv.className = 'statusMessage error';
+                    statusDiv.textContent = '❌ Помилка: ' + (result.message || 'Невідома помилка сервера');
+                }
+            } catch (err) {
+                statusDiv.className = 'statusMessage error';
+                statusDiv.textContent = '❌ Помилка мережі: ' + err.message;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Створити подію через GitHub App';
+                statusDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
